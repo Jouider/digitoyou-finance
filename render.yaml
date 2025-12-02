@@ -1,15 +1,12 @@
 services:
   - type: web
     name: digitoyou-finance
-    env: php
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader
-      php artisan config:cache
-      php artisan route:cache
-      php artisan view:cache
-    startCommand: |
-      php artisan migrate --force
-      php artisan serve --host=0.0.0.0 --port=$PORT
+    runtime: docker
+    plan: free
+    repo: https://github.com/Jouider/digitoyou-finance
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /login
     envVars:
       - key: APP_NAME
         value: Finance DigiToYou
