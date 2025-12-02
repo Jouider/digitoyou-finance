@@ -30,7 +30,13 @@ RUN chmod -R 755 storage bootstrap/cache && \
     chmod 664 database/database.sqlite
 
 # Create .env file from .env.example
-RUN cp .env.example .env
+RUN if [ -f .env.example ]; then cp .env.example .env; else \
+    echo "APP_NAME=DigiFinance" > .env && \
+    echo "APP_ENV=production" >> .env && \
+    echo "APP_DEBUG=false" >> .env && \
+    echo "APP_URL=https://digitoyou-finance.onrender.com" >> .env && \
+    echo "DB_CONNECTION=sqlite" >> .env && \
+    echo "DB_DATABASE=/app/database/database.sqlite" >> .env; fi
 
 # Generate application key
 RUN php artisan key:generate --force

@@ -10,7 +10,6 @@ storage/framework/views/*
 !storage/framework/cache/data/.gitkeep
 !storage/framework/sessions/.gitkeep
 !storage/framework/views/.gitkeep
-.env.example
 phpunit.xml
 README.md
 GUIDE_*.md
