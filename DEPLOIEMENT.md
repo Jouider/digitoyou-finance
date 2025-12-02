@@ -10,19 +10,22 @@ Ce projet est configuré pour un déploiement automatique vers Heberjahiz via Gi
 
 Allez sur : `https://github.com/Jouider/digitoyou-finance/settings/secrets/actions`
 
-Ajoutez ces 3 secrets (depuis cPanel → Comptes FTP) :
+Ajoutez ces 3 secrets :
 
-- **FTP_SERVER** : Adresse FTP (ex: `ftp.digitoyou.com` ou IP type `185.xxx.xxx.xxx`)
-- **FTP_USERNAME** : Nom d'utilisateur FTP (ex: `finance@digitoyou.com`)
-- **FTP_PASSWORD** : Mot de passe FTP
+- **FTP_SERVER** : `ftp.digitoyou.com`
+- **FTP_USERNAME** : `abdellah@finance.digitoyou.com`
+- **FTP_PASSWORD** : Votre mot de passe FTP
 
-**💡 Astuce** : Si tu n'as pas de compte FTP dédié, crée-en un dans cPanel → Comptes FTP
+📝 **Informations du serveur** :
+- Serveur FTP: `ftp.digitoyou.com`
+- Port: `21`
+- Répertoire: `/home/digitfl9/finance.digitoyou.com/abdellah`
 
 ### 2. Structure des dossiers sur le serveur
 
 ```
-/public_html/
-  └── finance/              # Tous les fichiers Laravel
+/home/digitfl9/finance.digitoyou.com/
+  └── abdellah/              # Racine FTP - Tous les fichiers Laravel ici
       ├── app/
       ├── bootstrap/
       ├── config/
@@ -37,19 +40,21 @@ Ajoutez ces 3 secrets (depuis cPanel → Comptes FTP) :
 
 ### 3. Configuration du sous-domaine dans cPanel
 
-1. Créer le sous-domaine `finance.digitoyou.com`
-2. Définir le **Document Root** sur : `/public_html/finance/public`
+1. Le sous-domaine `finance.digitoyou.com` devrait déjà être créé
+2. Vérifier que le **Document Root** pointe sur : `/home/digitfl9/finance.digitoyou.com/abdellah/public`
+3. Si ce n'est pas le cas, le modifier dans cPanel → Domaines
 
 ### 4. Premier déploiement manuel (via cPanel File Manager)
 
 **Étape A : Uploader les fichiers**
-1. Télécharger le ZIP du repo depuis GitHub ou utiliser un client FTP (FileZilla)
-2. Uploader vers `/public_html/finance/`
-3. Extraire si nécessaire
+1. Télécharger le ZIP du repo depuis GitHub ou utiliser FileZilla
+2. Se connecter avec : `abdellah@finance.digitoyou.com` / mot de passe
+3. Uploader vers la racine FTP (correspond à `/home/digitfl9/finance.digitoyou.com/abdellah/`)
+4. Extraire si nécessaire
 
 **Étape B : Créer le fichier `.env`** (via File Manager → Éditeur)
 
-Dans `/public_html/finance/.env` :
+Dans la racine (à côté de `artisan`) :
 ```env
 APP_NAME="Finance DigiToYou"
 APP_ENV=production
@@ -68,7 +73,7 @@ QUEUE_CONNECTION=sync
 
 Si tu as accès au Terminal (même limité) :
 ```bash
-cd /public_html/finance
+cd /home/digitfl9/finance.digitoyou.com/abdellah
 php artisan key:generate
 touch database/database.sqlite
 php artisan migrate --force
