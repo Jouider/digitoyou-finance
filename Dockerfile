@@ -29,7 +29,10 @@ RUN touch database/database.sqlite
 RUN chmod -R 755 storage bootstrap/cache && \
     chmod 664 database/database.sqlite
 
-# Generate application key (will be overridden by env var)
+# Create .env file from .env.example
+RUN cp .env.example .env
+
+# Generate application key
 RUN php artisan key:generate --force
 
 # Run migrations and seed
