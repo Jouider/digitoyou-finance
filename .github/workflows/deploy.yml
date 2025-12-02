@@ -11,73 +11,46 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP
+      - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           extensions: bcmath, ctype, fileinfo, json, mbstring, openssl, pdo, sqlite, tokenizer, xml
           coverage: none
 
-      - name: Install Composer dependencies
+      - name: 📦 Install Composer dependencies
         run: composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist
 
-      - name: Create deployment package
-        run: |
-          mkdir deployment
-          rsync -av --exclude='node_modules' \
-                    --exclude='.git' \
-                    --exclude='.github' \
-                    --exclude='tests' \
-                    --exclude='.env' \
-                    --exclude='.env.example' \
-                    --exclude='phpunit.xml' \
-                    --exclude='README.md' \
-                    --exclude='GUIDE_*.md' \
-                    --exclude='storage/logs/*' \
-                    --exclude='storage/framework/cache/*' \
-                    --exclude='storage/framework/sessions/*' \
-                    --exclude='storage/framework/views/*' \
-                    --exclude='database/database.sqlite' \
-                    ./ deployment/
+      - name: 🗜️ Create .htaccess for root protection
+        run: echo "deny from all" > .htaccess
 
-      - name: Create .htaccess for root protection
-        run: |
-          echo "deny from all" > deployment/.htaccess
-
-      - name: Deploy to server via FTP
+      - name: 🚀 Deploy to server via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./deployment/
+          protocol: ftps
+          port: 21
           server-dir: /public_html/finance/
-          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
+            **/tests/**
+            **/.env
+            **/.env.example
+            **/phpunit.xml
+            **/README.md
+            **/GUIDE_*.md
+            **/DEPLOIEMENT.md
+            **/deploy-check.sh
             storage/logs/**
-            storage/framework/cache/**
+            storage/framework/cache/data/**
             storage/framework/sessions/**
             storage/framework/views/**
-            .env
             database/database.sqlite
-
-      - name: Run post-deployment commands via SSH
-        uses: appleboy/ssh-action@v1.0.0
-        continue-on-error: true
-        with:
-          host: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 22
-          script: |
-            cd public_html/finance
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            chmod -R 755 storage bootstrap/cache
+          log-level: minimal

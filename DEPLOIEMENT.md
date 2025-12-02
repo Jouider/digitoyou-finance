@@ -1,18 +1,22 @@
-# Guide de Déploiement Automatique
+# Guide de Déploiement Automatique via FTP
 
 Ce projet est configuré pour un déploiement automatique vers Heberjahiz via GitHub Actions et FTP.
+
+**⚠️ Important** : Le repo est privé, donc on utilise FTP pour le déploiement automatique.
 
 ## 🚀 Configuration initiale
 
 ### 1. Configurer les secrets GitHub
 
-Allez sur votre repo GitHub : `https://github.com/Jouider/digitoyou-finance/settings/secrets/actions`
+Allez sur : `https://github.com/Jouider/digitoyou-finance/settings/secrets/actions`
 
-Ajoutez ces 3 secrets :
+Ajoutez ces 3 secrets (depuis cPanel → Comptes FTP) :
 
-- **FTP_SERVER** : Adresse du serveur FTP (ex: `ftp.digitoyou.com` ou l'IP)
-- **FTP_USERNAME** : Nom d'utilisateur FTP
+- **FTP_SERVER** : Adresse FTP (ex: `ftp.digitoyou.com` ou IP type `185.xxx.xxx.xxx`)
+- **FTP_USERNAME** : Nom d'utilisateur FTP (ex: `finance@digitoyou.com`)
 - **FTP_PASSWORD** : Mot de passe FTP
+
+**💡 Astuce** : Si tu n'as pas de compte FTP dédié, crée-en un dans cPanel → Comptes FTP
 
 ### 2. Structure des dossiers sur le serveur
 
@@ -36,36 +40,45 @@ Ajoutez ces 3 secrets :
 1. Créer le sous-domaine `finance.digitoyou.com`
 2. Définir le **Document Root** sur : `/public_html/finance/public`
 
-### 4. Premier déploiement manuel (via FTP)
+### 4. Premier déploiement manuel (via cPanel File Manager)
 
-1. **Uploader tous les fichiers** du projet vers `/public_html/finance/`
+**Étape A : Uploader les fichiers**
+1. Télécharger le ZIP du repo depuis GitHub ou utiliser un client FTP (FileZilla)
+2. Uploader vers `/public_html/finance/`
+3. Extraire si nécessaire
 
-2. **Créer le fichier `.env`** (ne jamais le mettre dans Git) :
-```bash
+**Étape B : Créer le fichier `.env`** (via File Manager → Éditeur)
+
+Dans `/public_html/finance/.env` :
+```env
 APP_NAME="Finance DigiToYou"
 APP_ENV=production
-APP_KEY=              # À générer
+APP_KEY=
 APP_DEBUG=false
 APP_URL=https://finance.digitoyou.com
 
 DB_CONNECTION=sqlite
-# Le fichier SQLite sera créé dans database/database.sqlite
 
 SESSION_DRIVER=file
 CACHE_DRIVER=file
 QUEUE_CONNECTION=sync
 ```
 
-3. **Via SSH ou Terminal File Manager cPanel** :
+**Étape C : Configuration via Terminal cPanel** (ou PHP Selector)
+
+Si tu as accès au Terminal (même limité) :
 ```bash
 cd /public_html/finance
 php artisan key:generate
 touch database/database.sqlite
 php artisan migrate --force
 php artisan db:seed --force
-chmod -R 755 storage bootstrap/cache
-chmod 664 database/database.sqlite
 ```
+
+**Sinon, via File Manager** :
+1. Créer manuellement `database/database.sqlite` (fichier vide)
+2. Pour générer APP_KEY : utilise un générateur en ligne Laravel ou contacte le support
+3. Permissions : Clic droit → Change Permissions → 755 pour `storage/` et `bootstrap/cache/`
 
 4. **Créer `.htaccess` à la racine** (`/public_html/finance/.htaccess`) :
 ```apache
@@ -104,9 +117,9 @@ Le fichier `/public_html/finance/public/.htaccess` doit contenir :
 
 Après la configuration initiale, **chaque push sur la branche `main`** déclenche automatiquement :
 
-1. ✅ Installation des dépendances Composer
-2. ✅ Envoi des fichiers via FTP
-3. ✅ Optimisation du cache Laravel (si SSH disponible)
+1. ✅ Installation des dépendances Composer (optimisées)
+2. ✅ Envoi des fichiers modifiés via FTP
+3. ✅ Protection automatique de la racine Laravel
 
 ### Workflow de développement
 
@@ -118,27 +131,30 @@ git commit -m "Ajout fonctionnalité X"
 # 2. Pousser sur GitHub
 git push origin main
 
-# 3. GitHub Actions déploie automatiquement ! 🎉
+# 3. GitHub Actions déploie automatiquement en 2-3 minutes ! 🎉
 ```
 
-## 📋 Commandes utiles après déploiement
+**📊 Suivi du déploiement** : Va sur https://github.com/Jouider/digitoyou-finance/actions
 
-Si vous avez accès SSH, après un déploiement :
+**⚠️ Note** : Sans accès SSH, tu devras parfois vider les caches manuellement via File Manager :
+- Supprimer le contenu de `storage/framework/cache/data/`
+- Supprimer le contenu de `storage/framework/views/`
 
-```bash
-cd /public_html/finance
+## 📋 Maintenance (sans SSH)
 
-# Vider et reconstruire les caches
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+**Vider les caches** (via File Manager cPanel) :
+1. Aller dans `storage/framework/cache/data/` → Supprimer tout le contenu
+2. Aller dans `storage/framework/views/` → Supprimer tout le contenu
+3. Aller dans `bootstrap/cache/` → Supprimer `config.php` et `routes.php` (si présents)
 
-# Si modifications de base de données
-php artisan migrate --force
+**Mettre à jour la base de données** :
+- Si tu as Terminal cPanel : `cd /public_html/finance && php artisan migrate --force`
+- Sinon : Exécuter les migrations via un fichier PHP temporaire (voir support)
 
-# Réparer les permissions
-chmod -R 755 storage bootstrap/cache
-```
+**Réparer les permissions** (via File Manager) :
+- `storage/` → Clic droit → Change Permissions → 755
+- `bootstrap/cache/` → Clic droit → Change Permissions → 755
+- `database/database.sqlite` → 644
 
 ## 🐛 Résolution de problèmes
 
