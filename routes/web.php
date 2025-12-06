@@ -11,6 +11,7 @@ use App\Http\Controllers\ProfitDistributionController;
 use App\Http\Controllers\ProjectPaymentController;
 use App\Http\Controllers\FundMovementController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BackupController;
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -30,4 +31,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('project-payments', ProjectPaymentController::class);
     Route::resource('fund-movements', FundMovementController::class);
     Route::post('/fund-movements/transfer', [FundMovementController::class, 'transfer'])->name('fund-movements.transfer');
+    
+    // Backup & Restore Routes
+    Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
+    Route::get('/backup/export', [BackupController::class, 'export'])->name('backup.export');
+    Route::get('/backup/export-sql', [BackupController::class, 'exportSql'])->name('backup.export.sql');
+    Route::post('/backup/import', [BackupController::class, 'import'])->name('backup.import');
 });

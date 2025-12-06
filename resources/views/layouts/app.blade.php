@@ -46,6 +46,10 @@
                         <i class="fas fa-chart-line mr-3"></i>
                         Rapport Annuel
                     </a>
+                    <a href="{{ route('backup.index') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-blue-800 transition {{ request()->routeIs('backup.*') ? 'bg-blue-800' : '' }}">
+                        <i class="fas fa-download mr-3"></i>
+                        Sauvegarde
+                    </a>
                 </nav>
             </div>
         </aside>
