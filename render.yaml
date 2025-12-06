@@ -7,6 +7,11 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /login
+    # Persistent disk for SQLite database
+    disk:
+      name: digitoyou-finance-data
+      mountPath: /app/database
+      sizeGB: 1
     envVars:
       - key: APP_NAME
         value: Finance DigiToYou

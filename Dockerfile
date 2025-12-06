@@ -22,12 +22,8 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Create SQLite database
-RUN touch database/database.sqlite
-
-# Set permissions
-RUN chmod -R 755 storage bootstrap/cache && \
-    chmod 664 database/database.sqlite
+# Set permissions for storage and cache
+RUN chmod -R 755 storage bootstrap/cache
 
 # Create .env file from .env.example
 RUN if [ -f .env.example ]; then cp .env.example .env; else \
@@ -41,17 +37,12 @@ RUN if [ -f .env.example ]; then cp .env.example .env; else \
 # Generate application key
 RUN php artisan key:generate --force
 
-# Run migrations and seed
-RUN php artisan migrate --force && \
-    php artisan db:seed --force
-
-# Cache configuration
-RUN php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Expose port
 EXPOSE 8080
 
-# Start the application
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+# Use entrypoint script
+ENTRYPOINT ["docker-entrypoint.sh"]
