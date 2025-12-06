@@ -1,25 +1,24 @@
 #!/bin/sh
 
-# Create database directory if it doesn't exist
-mkdir -p /app/database
+# Wait for PostgreSQL to be ready
+echo "⏳ Waiting for database connection..."
+until php artisan migrate:status > /dev/null 2>&1; do
+    echo "⏳ Database not ready, waiting 2 seconds..."
+    sleep 2
+done
 
-# Create SQLite database file if it doesn't exist
-if [ ! -f /app/database/database.sqlite ]; then
-    echo "📁 Creating database file..."
-    touch /app/database/database.sqlite
-    chmod 664 /app/database/database.sqlite
-fi
+echo "✅ Database connection established!"
 
-# Check if database needs initialization (check if users table exists)
-TABLE_EXISTS=$(sqlite3 /app/database/database.sqlite "SELECT name FROM sqlite_master WHERE type='table' AND name='users';" 2>/dev/null)
+# Check if database needs initialization (check if users table has data)
+USER_COUNT=$(php artisan tinker --execute="echo \App\Models\User::count();" 2>/dev/null | tail -n 1)
 
-if [ -z "$TABLE_EXISTS" ]; then
+if [ "$USER_COUNT" = "0" ] || [ -z "$USER_COUNT" ]; then
     echo "🔧 First run detected - initializing database..."
     php artisan migrate --force
     php artisan db:seed --force
     echo "✅ Database initialized successfully"
 else
-    echo "✅ Database already exists - running migrations only..."
+    echo "✅ Database already exists with $USER_COUNT users - running migrations only..."
     php artisan migrate --force
 fi
 

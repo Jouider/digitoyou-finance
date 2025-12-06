@@ -7,11 +7,6 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /login
-    # Persistent disk for SQLite database
-    disk:
-      name: digitoyou-finance-data
-      mountPath: /app/database
-      sizeGB: 1
     envVars:
       - key: APP_NAME
         value: Finance DigiToYou
@@ -32,9 +27,19 @@ services:
       - key: LOG_LEVEL
         value: error
       - key: DB_CONNECTION
-        value: sqlite
+        value: pgsql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: postgres
+      - key: DB_USERNAME
+        value: postgres
+      - key: DB_PASSWORD
+        sync: false
       - key: SESSION_DRIVER
-        value: file
+        value: database
       - key: SESSION_LIFETIME
         value: 120
       - key: CACHE_STORE
@@ -43,9 +48,3 @@ services:
         value: sync
       - key: FILESYSTEM_DISK
         value: local
-
-databases:
-  # Optionnel: si tu veux PostgreSQL au lieu de SQLite
-  # - name: digitoyou-finance-db
-  #   databaseName: finance
-  #   user: finance_user

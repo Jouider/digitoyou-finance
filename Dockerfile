@@ -6,8 +6,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     zip \
     unzip \
-    sqlite3 \
-    libsqlite3-dev \
+    libpq-dev \
+    postgresql-client \
+    && docker-php-ext-install pdo pdo_pgsql \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
@@ -26,13 +27,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN chmod -R 755 storage bootstrap/cache
 
 # Create .env file from .env.example
-RUN if [ -f .env.example ]; then cp .env.example .env; else \
-    echo "APP_NAME=DigiFinance" > .env && \
-    echo "APP_ENV=production" >> .env && \
-    echo "APP_DEBUG=false" >> .env && \
-    echo "APP_URL=https://digitoyou-finance.onrender.com" >> .env && \
-    echo "DB_CONNECTION=sqlite" >> .env && \
-    echo "DB_DATABASE=/app/database/database.sqlite" >> .env; fi
+RUN cp .env.example .env
 
 # Generate application key
 RUN php artisan key:generate --force
