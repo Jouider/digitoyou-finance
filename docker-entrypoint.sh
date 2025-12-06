@@ -1,9 +1,30 @@
 #!/bin/sh
 
-# Wait for PostgreSQL to be ready
+# Display environment variables for debugging (without sensitive data)
+echo "🔍 Environment check:"
+echo "DB_CONNECTION: ${DB_CONNECTION}"
+echo "DB_HOST: ${DB_HOST}"
+echo "DB_PORT: ${DB_PORT}"
+echo "DB_DATABASE: ${DB_DATABASE}"
+echo "DB_USERNAME: ${DB_USERNAME}"
+echo "DB_PASSWORD: [HIDDEN]"
+
+# Wait for PostgreSQL to be ready with timeout
 echo "⏳ Waiting for database connection..."
+MAX_TRIES=30
+TRY_COUNT=0
+
 until php artisan migrate:status > /dev/null 2>&1; do
-    echo "⏳ Database not ready, waiting 2 seconds..."
+    TRY_COUNT=$((TRY_COUNT + 1))
+    
+    if [ $TRY_COUNT -ge $MAX_TRIES ]; then
+        echo "❌ Database connection failed after $MAX_TRIES attempts"
+        echo "🔍 Testing connection manually..."
+        php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'Connected!'; } catch (Exception \$e) { echo 'Error: ' . \$e->getMessage(); }"
+        exit 1
+    fi
+    
+    echo "⏳ Database not ready, attempt $TRY_COUNT/$MAX_TRIES..."
     sleep 2
 done
 
